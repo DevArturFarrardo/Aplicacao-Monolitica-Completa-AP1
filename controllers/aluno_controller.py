@@ -1,6 +1,6 @@
 # controllers/aluno_controller.py
 from flask import Blueprint, request, jsonify
-from app import db
+from extensions import db            # <-- usar extensions, não app
 from models import Aluno
 from datetime import datetime
 
@@ -70,18 +70,23 @@ def create_aluno():
       201:
         description: Aluno criado
     """
-    data = request.get_json()
-    
-    # Calcular média final
-    nota1 = data.get('nota_primeiro_semestre', 0)
-    nota2 = data.get('nota_segundo_semestre', 0)
-    media = (nota1 + nota2) / 2 if nota1 and nota2 else None
-    
+    data = request.get_json() or {}
+
+    # Calcular média final (tratando None)
+    nota1 = data.get('nota_primeiro_semestre')
+    nota2 = data.get('nota_segundo_semestre')
+    media = None
+    if nota1 is not None and nota2 is not None:
+        try:
+            media = (float(nota1) + float(nota2)) / 2
+        except (TypeError, ValueError):
+            media = None
+
     aluno = Aluno(
-        nome=data['nome'],
-        idade=data['idade'],
-        turma_id=data['turma_id'],
-        data_nascimento=datetime.strptime(data['data_nascimento'], '%Y-%m-%d').date(),
+        nome=data.get('nome'),
+        idade=data.get('idade'),
+        turma_id=data.get('turma_id'),
+        data_nascimento=datetime.strptime(data['data_nascimento'], '%Y-%m-%d').date() if data.get('data_nascimento') else None,
         nota_primeiro_semestre=nota1,
         nota_segundo_semestre=nota2,
         media_final=media
@@ -126,25 +131,28 @@ def update_aluno(id):
         description: Aluno atualizado
     """
     aluno = Aluno.query.get_or_404(id)
-    data = request.get_json()
-    
+    data = request.get_json() or {}
+
     aluno.nome = data.get('nome', aluno.nome)
     aluno.idade = data.get('idade', aluno.idade)
     aluno.turma_id = data.get('turma_id', aluno.turma_id)
-    
-    if 'data_nascimento' in data:
+
+    if 'data_nascimento' in data and data.get('data_nascimento'):
         aluno.data_nascimento = datetime.strptime(data['data_nascimento'], '%Y-%m-%d').date()
-    
+
     if 'nota_primeiro_semestre' in data:
-        aluno.nota_primeiro_semestre = data['nota_primeiro_semestre']
-    
+        aluno.nota_primeiro_semestre = data.get('nota_primeiro_semestre')
+
     if 'nota_segundo_semestre' in data:
-        aluno.nota_segundo_semestre = data['nota_segundo_semestre']
-    
+        aluno.nota_segundo_semestre = data.get('nota_segundo_semestre')
+
     # Recalcular média
-    if aluno.nota_primeiro_semestre and aluno.nota_segundo_semestre:
-        aluno.media_final = (aluno.nota_primeiro_semestre + aluno.nota_segundo_semestre) / 2
-    
+    if aluno.nota_primeiro_semestre is not None and aluno.nota_segundo_semestre is not None:
+        try:
+            aluno.media_final = (float(aluno.nota_primeiro_semestre) + float(aluno.nota_segundo_semestre)) / 2
+        except (TypeError, ValueError):
+            aluno.media_final = None
+
     db.session.commit()
     return jsonify(aluno.to_dict()), 200
 

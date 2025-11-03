@@ -1,18 +1,18 @@
 # models.py
-from app import db
 from datetime import datetime
+from extensions import db  # 👈 Importa daqui, não mais de app.py
 
 class Professor(db.Model):
     __tablename__ = 'professor'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     idade = db.Column(db.Integer, nullable=False)
     materia = db.Column(db.String(100), nullable=False)
     observacoes = db.Column(db.Text)
-    
+
     turmas = db.relationship('Turma', backref='professor', lazy=True)
-    
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -22,16 +22,17 @@ class Professor(db.Model):
             'observacoes': self.observacoes
         }
 
+
 class Turma(db.Model):
     __tablename__ = 'turma'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(100), nullable=False)
     professor_id = db.Column(db.Integer, db.ForeignKey('professor.id'), nullable=False)
     ativo = db.Column(db.Boolean, default=True)
-    
+
     alunos = db.relationship('Aluno', backref='turma', lazy=True)
-    
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -40,9 +41,10 @@ class Turma(db.Model):
             'ativo': self.ativo
         }
 
+
 class Aluno(db.Model):
     __tablename__ = 'aluno'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     idade = db.Column(db.Integer, nullable=False)
@@ -51,7 +53,7 @@ class Aluno(db.Model):
     nota_primeiro_semestre = db.Column(db.Float)
     nota_segundo_semestre = db.Column(db.Float)
     media_final = db.Column(db.Float)
-    
+
     def to_dict(self):
         return {
             'id': self.id,

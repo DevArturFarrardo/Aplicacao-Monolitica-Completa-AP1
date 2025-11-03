@@ -1,30 +1,53 @@
 # app.py
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flasgger import Swagger
+from flask import Flask, jsonify
+from extensions import db, swagger
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///escola.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+def create_app():
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///escola.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+    # Inicializar extensões
+    db.init_app(app)
 
-swagger = Swagger(app)
+    try:
+        swagger.init_app(app)
+    except Exception:
+        try:
+            swagger(app)
+        except Exception:
+            pass
 
-# Importar models
-from models import Professor, Turma, Aluno
+    # Importar e registrar blueprints AQUI para evitar import circular
+    from controllers import professor_controller, turma_controller, aluno_controller
+    app.register_blueprint(professor_controller.bp)
+    app.register_blueprint(turma_controller.bp)
+    app.register_blueprint(aluno_controller.bp)
 
-# Importar controllers
-from controllers import professor_controller, turma_controller, aluno_controller
+    # Rota raiz amigável que lista os endpoints principais
+    @app.route('/', methods=['GET'])
+    def index():
+        links = {
+            'professores': '/professores',
+            'turmas': '/turmas',
+            'alunos': '/alunos',
+            'swagger': '/apidocs'  # flasgger padrão
+        }
+        return jsonify(links), 200
 
-# Registrar blueprints
-app.register_blueprint(professor_controller.bp)
-app.register_blueprint(turma_controller.bp)
-app.register_blueprint(aluno_controller.bp)
+    # Opcional: imprimir todas as rotas no log para debugging
+    print("Rotas registradas:")
+    for rule in app.url_map.iter_rules():
+        print(rule)
 
-# Criar tabelas
-with app.app_context():
-    db.create_all()
+    # Criar tabelas (importar modelos dentro do contexto do app)
+    with app.app_context():
+        from models import Professor, Turma, Aluno
+        db.create_all()
+
+    return app
+
+app = create_app()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

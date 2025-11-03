@@ -1,6 +1,6 @@
 # controllers/professor_controller.py
 from flask import Blueprint, request, jsonify
-from app import db
+from extensions import db            # <-- usar extensions, não app
 from models import Professor
 
 bp = Blueprint('professores', __name__, url_prefix='/professores')
@@ -66,11 +66,12 @@ def create_professor():
       201:
         description: Professor criado
     """
-    data = request.get_json()
+    data = request.get_json() or {}
+
     professor = Professor(
-        nome=data['nome'],
-        idade=data['idade'],
-        materia=data['materia'],
+        nome=data.get('nome'),
+        idade=data.get('idade'),
+        materia=data.get('materia'),
         observacoes=data.get('observacoes', '')
     )
     db.session.add(professor)
@@ -108,13 +109,13 @@ def update_professor(id):
         description: Professor atualizado
     """
     professor = Professor.query.get_or_404(id)
-    data = request.get_json()
-    
+    data = request.get_json() or {}
+
     professor.nome = data.get('nome', professor.nome)
     professor.idade = data.get('idade', professor.idade)
     professor.materia = data.get('materia', professor.materia)
     professor.observacoes = data.get('observacoes', professor.observacoes)
-    
+
     db.session.commit()
     return jsonify(professor.to_dict()), 200
 
