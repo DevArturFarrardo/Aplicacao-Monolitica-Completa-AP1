@@ -79,3 +79,7 @@ Vantagens dessa abordagem no projeto:
 - **Documentação/contratos:** cada serviço expõe documentação (Swagger/Flask-RESTX) localmente, permitindo verificar contratos de API por serviço.
 
 ---
+
+http://localhost:5000/apidocs
+http://localhost:5001/docs
+http://localhost:5002/docs
