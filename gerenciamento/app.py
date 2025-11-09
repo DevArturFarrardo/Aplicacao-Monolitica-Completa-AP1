@@ -11,11 +11,9 @@ def create_app():
         'uiversion': 3
     }
 
-    # inicializa extensões
     db.init_app(app)          # ✅ apenas uma vez
     swagger.init_app(app)
 
-    # registra blueprints
     app.register_blueprint(professor_controller.bp)
     app.register_blueprint(turma_controller.bp)
     app.register_blueprint(aluno_controller.bp)

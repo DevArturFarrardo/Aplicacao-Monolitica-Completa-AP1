@@ -1,6 +1,5 @@
-# controllers/aluno_controller.py
 from flask import Blueprint, request, jsonify
-from extensions import db            # <-- usar extensions, não app
+from extensions import db            
 from models import Aluno
 from datetime import datetime
 
@@ -72,7 +71,6 @@ def create_aluno():
     """
     data = request.get_json() or {}
 
-    # Calcular média final (tratando None)
     nota1 = data.get('nota_primeiro_semestre')
     nota2 = data.get('nota_segundo_semestre')
     media = None
@@ -146,7 +144,6 @@ def update_aluno(id):
     if 'nota_segundo_semestre' in data:
         aluno.nota_segundo_semestre = data.get('nota_segundo_semestre')
 
-    # Recalcular média
     if aluno.nota_primeiro_semestre is not None and aluno.nota_segundo_semestre is not None:
         try:
             aluno.media_final = (float(aluno.nota_primeiro_semestre) + float(aluno.nota_segundo_semestre)) / 2

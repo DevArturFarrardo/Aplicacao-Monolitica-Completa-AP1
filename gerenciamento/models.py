@@ -1,6 +1,5 @@
-# models.py
 from datetime import datetime
-from extensions import db  # 👈 Importa daqui, não mais de app.py
+from extensions import db  
 
 class Professor(db.Model):
     __tablename__ = 'professor'

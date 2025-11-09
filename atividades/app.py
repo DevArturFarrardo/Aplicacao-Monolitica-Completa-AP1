@@ -6,11 +6,9 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///atividades.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Inicializa extensões
     db.init_app(app)
     api.init_app(app)
 
-    # ✅ Rota base ANTES de importar routes
     @app.route('/', methods=['GET'])
     def index():
         """Exibe os links principais da API de Atividades"""
@@ -21,7 +19,6 @@ def create_app():
         }
         return jsonify(links), 200
 
-    # Importa models e routes dentro do contexto
     with app.app_context():
         import models
         import routes

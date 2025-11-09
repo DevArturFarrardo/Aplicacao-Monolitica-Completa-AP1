@@ -1,6 +1,5 @@
-# controllers/professor_controller.py
 from flask import Blueprint, request, jsonify
-from extensions import db            # <-- usar extensions, não app
+from extensions import db            
 from models import Professor
 
 bp = Blueprint('professores', __name__, url_prefix='/professores')
