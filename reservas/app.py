@@ -1,19 +1,35 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_restx import Api
+from flask import Flask, jsonify
+from extensions import db, api
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reservas.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+def create_app():
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reservas.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-api = Api(app, title="Reservas API", doc="/docs")
+    # Inicializa extensões
+    db.init_app(app)
+    api.init_app(app)
 
-# importa modelos e rotas (após db criado)
-import models
-import routes
+    # ✅ Rota base ANTES de importar routes
+    @app.route('/', methods=['GET'])
+    def index():
+        """Exibe os links principais da API de Reservas"""
+        links = {
+            'reservas': '/reservas',
+            'swagger': '/docs'
+        }
+        return jsonify(links), 200
 
-if __name__ == "__main__":
+    # Importa models e routes dentro do contexto
+    with app.app_context():
+        import models
+        import routes
+
+    return app
+
+
+if __name__ == '__main__':
+    app = create_app()
     with app.app_context():
         db.create_all()
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

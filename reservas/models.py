@@ -1,11 +1,10 @@
-from app import db
-from datetime import datetime
+from extensions import db
 
 class Reserva(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     num_sala = db.Column(db.String(50), nullable=False)
     lab = db.Column(db.String(50))
-    data = db.Column(db.String(50), nullable=False)  # ou DateTime conforme preferir
+    data = db.Column(db.String(50), nullable=False)
     turma_id = db.Column(db.Integer, nullable=False)
 
     def to_dict(self):
