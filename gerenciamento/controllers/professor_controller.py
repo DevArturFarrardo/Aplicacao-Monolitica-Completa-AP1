@@ -1,140 +1,88 @@
-from flask import Blueprint, request, jsonify
-from extensions import db            
-from models import Professor
+from flask import request, jsonify
+from models.professor import Professor, db
 
-bp = Blueprint('professores', __name__, url_prefix='/professores')
+class ProfessorController:
 
-@bp.route('/', methods=['GET'])
-def get_professores():
-    """
-    Listar todos os professores
-    ---
-    tags:
-      - Professores
-    responses:
-      200:
-        description: Lista de professores
-    """
-    professores = Professor.query.all()
-    return jsonify([p.to_dict() for p in professores]), 200
+    @staticmethod
+    def _get_data():
+        data = request.get_json()
+        if not data:
+            return None, jsonify({"error": "Dados inválidos"}), 400
+        return data, None, None
 
-@bp.route('/<int:id>', methods=['GET'])
-def get_professor(id):
-    """
-    Buscar professor por ID
-    ---
-    tags:
-      - Professores
-    parameters:
-      - name: id
-        in: path
-        type: integer
-        required: true
-    responses:
-      200:
-        description: Professor encontrado
-      404:
-        description: Professor não encontrado
-    """
-    professor = Professor.query.get_or_404(id)
-    return jsonify(professor.to_dict()), 200
+    @staticmethod
+    def get_professores():
+        if request.method != 'GET':
+            return jsonify({"error": "Método não permitido"}), 405
 
-@bp.route('/', methods=['POST'])
-def create_professor():
-    """
-    Criar novo professor
-    ---
-    tags:
-      - Professores
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            nome:
-              type: string
-            idade:
-              type: integer
-            materia:
-              type: string
-            observacoes:
-              type: string
-    responses:
-      201:
-        description: Professor criado
-    """
-    data = request.get_json() or {}
+        professores = Professor.query.all()
+        return jsonify([prof.to_dict() for prof in professores]), 200
 
-    professor = Professor(
-        nome=data.get('nome'),
-        idade=data.get('idade'),
-        materia=data.get('materia'),
-        observacoes=data.get('observacoes', '')
-    )
-    db.session.add(professor)
-    db.session.commit()
-    return jsonify(professor.to_dict()), 201
+    @staticmethod
+    def get_professor_by_id(professor_id):
+        if request.method != 'GET':
+            return jsonify({"error": "Método não permitido"}), 405
 
-@bp.route('/<int:id>', methods=['PUT'])
-def update_professor(id):
-    """
-    Atualizar professor
-    ---
-    tags:
-      - Professores
-    parameters:
-      - name: id
-        in: path
-        type: integer
-        required: true
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            nome:
-              type: string
-            idade:
-              type: integer
-            materia:
-              type: string
-            observacoes:
-              type: string
-    responses:
-      200:
-        description: Professor atualizado
-    """
-    professor = Professor.query.get_or_404(id)
-    data = request.get_json() or {}
+        professor = Professor.query.get(professor_id)
+        if not professor:
+            return jsonify({"error": "Professor não encontrado"}), 404
+        return jsonify(professor.to_dict()), 200
 
-    professor.nome = data.get('nome', professor.nome)
-    professor.idade = data.get('idade', professor.idade)
-    professor.materia = data.get('materia', professor.materia)
-    professor.observacoes = data.get('observacoes', professor.observacoes)
+    @staticmethod
+    def create_professor():
+        if request.method != 'POST':
+            return jsonify({"error": "Método não permitido"}), 405
 
-    db.session.commit()
-    return jsonify(professor.to_dict()), 200
+        data, error_response, status = ProfessorController._get_data()
+        if error_response:
+            return error_response, status
 
-@bp.route('/<int:id>', methods=['DELETE'])
-def delete_professor(id):
-    """
-    Deletar professor
-    ---
-    tags:
-      - Professores
-    parameters:
-      - name: id
-        in: path
-        type: integer
-        required: true
-    responses:
-      204:
-        description: Professor deletado
-    """
-    professor = Professor.query.get_or_404(id)
-    db.session.delete(professor)
-    db.session.commit()
-    return '', 204
+        obrigatorios = ["nome", "idade", "materia"]
+        for campo in obrigatorios:
+            if campo not in data:
+                return jsonify({"error": f"Campo obrigatório {campo} ausente"}), 400
+
+        novo_professor = Professor(
+            nome=data["nome"],
+            idade=data["idade"],
+            materia=data["materia"],
+            observacoes=data.get("observacoes")
+        )
+
+        db.session.add(novo_professor)
+        db.session.commit()
+        return jsonify(novo_professor.to_dict()), 201
+
+    @staticmethod
+    def update_professor(professor_id):
+        if request.method != 'PUT':
+            return jsonify({"error": "Método não permitido"}), 405
+
+        professor = Professor.query.get(professor_id)
+        if not professor:
+            return jsonify({"error": "Professor não encontrado"}), 404
+
+        data, error_response, status = ProfessorController._get_data()
+        if error_response:
+            return error_response, status
+
+        campos = ["nome", "idade", "materia", "observacoes"]
+        for campo in campos:
+            if campo in data:
+                setattr(professor, campo, data[campo])
+
+        db.session.commit()
+        return jsonify(professor.to_dict()), 200
+
+    @staticmethod
+    def delete_professor(professor_id):
+        if request.method != 'DELETE':
+            return jsonify({"error": "Método não permitido"}), 405
+
+        professor = Professor.query.get(professor_id)
+        if not professor:
+            return jsonify({"error": "Professor não encontrado"}), 404
+
+        db.session.delete(professor)
+        db.session.commit()
+        return jsonify({"message": "Professor deletado com sucesso"}), 200

@@ -1,47 +1,83 @@
-from flask import Blueprint, request, jsonify
-from extensions import db
-from models import Turma
+from flask import request, jsonify
+from models.turma import Turma, db
 
-bp = Blueprint('turmas', __name__, url_prefix='/turmas')
+class TurmaController:
 
-@bp.route('/', methods=['GET'])
-def get_turmas():
-    turmas = Turma.query.all()
-    return jsonify([t.to_dict() for t in turmas]), 200
+    @staticmethod
+    def _get_json():
+        data = request.get_json()
+        if not data:
+            return None, jsonify({"error": "Dados inválidos"}), 400
+        return data, None, None
 
-@bp.route('/<int:id>', methods=['GET'])
-def get_turma(id):
-    turma = Turma.query.get_or_404(id)
-    return jsonify(turma.to_dict()), 200
+    @staticmethod
+    def get_turmas():
+        if request.method != 'GET':
+            return jsonify({"error": "Método não permitido"}), 405
 
-@bp.route('/', methods=['POST'])
-def create_turma():
-    data = request.get_json() or {}
+        turmas = Turma.query.all()
+        return jsonify([turma.to_dict() for turma in turmas]), 200
 
-    turma = Turma(
-        descricao=data.get('descricao'),
-        professor_id=data.get('professor_id'),
-        ativo=data.get('ativo', True)
-    )
-    db.session.add(turma)
-    db.session.commit()
-    return jsonify(turma.to_dict()), 201
+    @staticmethod
+    def get_turma_by_id(turma_id):
+        if request.method != 'GET':
+            return jsonify({"error": "Método não permitido"}), 405
 
-@bp.route('/<int:id>', methods=['PUT'])
-def update_turma(id):
-    turma = Turma.query.get_or_404(id)
-    data = request.get_json() or {}
+        turma = Turma.query.get(turma_id)
+        if not turma:
+            return jsonify({"error": "Turma não encontrada"}), 404
+        return jsonify(turma.to_dict()), 200
 
-    turma.descricao = data.get('descricao', turma.descricao)
-    turma.professor_id = data.get('professor_id', turma.professor_id)
-    turma.ativo = data.get('ativo', turma.ativo)
+    @staticmethod
+    def create_turma():
+        if request.method != 'POST':
+            return jsonify({"error": "Método não permitido"}), 405
 
-    db.session.commit()
-    return jsonify(turma.to_dict()), 200
+        data, error_response, status = TurmaController._get_json()
+        if error_response:
+            return error_response, status
 
-@bp.route('/<int:id>', methods=['DELETE'])
-def delete_turma(id):
-    turma = Turma.query.get_or_404(id)
-    db.session.delete(turma)
-    db.session.commit()
-    return '', 204
+        if "descricao" not in data or "professor_id" not in data:
+            return jsonify({"error": "Campos obrigatórios ausentes"}), 400
+
+        nova_turma = Turma(
+            descricao=data["descricao"],
+            professor_id=data["professor_id"],
+            ativo=data.get("ativo", True)
+        )
+        db.session.add(nova_turma)
+        db.session.commit()
+        return jsonify(nova_turma.to_dict()), 201
+
+    @staticmethod
+    def update_turma(turma_id):
+        if request.method != 'PUT':
+            return jsonify({"error": "Método não permitido"}), 405
+
+        turma = Turma.query.get(turma_id)
+        if not turma:
+            return jsonify({"error": "Turma não encontrada"}), 404
+
+        data, error_response, status = TurmaController._get_json()
+        if error_response:
+            return error_response, status
+
+        turma.descricao = data.get("descricao", turma.descricao)
+        turma.professor_id = data.get("professor_id", turma.professor_id)
+        turma.ativo = data.get("ativo", turma.ativo)
+
+        db.session.commit()
+        return jsonify(turma.to_dict()), 200
+
+    @staticmethod
+    def delete_turma(turma_id):
+        if request.method != 'DELETE':
+            return jsonify({"error": "Método não permitido"}), 405
+
+        turma = Turma.query.get(turma_id)
+        if not turma:
+            return jsonify({"error": "Turma não encontrada"}), 404
+
+        db.session.delete(turma)
+        db.session.commit()
+        return jsonify({"message": "Turma deletada com sucesso"}), 200
