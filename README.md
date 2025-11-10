@@ -68,9 +68,9 @@ Após a inicialização, os serviços estarão disponíveis nos seguintes endere
 
 | Microsserviço | URL Base |
 |---------------|----------|
-| **Gerenciamento** | [http://localhost:8500](http://localhost:8500) |
-| **Agendamentos** | [http://localhost:8501](http://localhost:8501) |
-| **Tarefas** | [http://localhost:8502](http://localhost:8502) |
+| **Gerenciamento** | [http://localhost:1300](http://localhost:8500) |
+| **Agendamentos** | [http://localhost:1301](http://localhost:8501) |
+| **Tarefas** | [http://localhost:1302](http://localhost:8502) |
 
 ---
 
@@ -80,9 +80,9 @@ Cada microsserviço possui documentação automática gerada pelo **Swagger UI**
 
 | Serviço | Swagger UI |
 |---------|------------|
-| **Gerenciamento** | [http://localhost:8500/apidocs](http://localhost:8500/apidocs) |
-| **Agendamentos** | [http://localhost:8501/apidocs](http://localhost:8501/apidocs) |
-| **Tarefas** | [http://localhost:8502/apidocs](http://localhost:8502/apidocs) |
+| **Gerenciamento** | [http://localhost:8500/apidocs](http://localhost:1300/apidocs) |
+| **Agendamentos** | [http://localhost:8501/apidocs](http://localhost:1301/apidocs) |
+| **Tarefas** | [http://localhost:8502/apidocs](http://localhost:1302/apidocs) |
 
 ---
 
