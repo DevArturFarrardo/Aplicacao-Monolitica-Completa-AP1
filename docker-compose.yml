@@ -5,7 +5,7 @@ services:
     build: ./gerenciamento
     container_name: gerenciamento
     ports:
-      - "8500:5050"
+      - "1300:5050"
     volumes:
       - gerenciamento_data:/data
     environment:
@@ -17,7 +17,7 @@ services:
     build: ./agendamentos
     container_name: agendamentos
     ports:
-      - "8501:5051"
+      - "1301:5051"
     volumes:
       - agendamentos_data:/data
     environment:
@@ -32,7 +32,7 @@ services:
     build: ./tarefas
     container_name: tarefas
     ports:
-      - "8502:5052"
+      - "1302:5052"
     volumes:
       - tarefas_data:/data
     environment:

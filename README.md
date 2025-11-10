@@ -17,9 +17,9 @@ Este sistema foi desenvolvido utilizando **arquitetura de microsserviços** para
 
 | Serviço | Responsabilidade | Porta |
 |---------|------------------|-------|
-| **Gerenciamento** | Cadastro de alunos, turmas e professores | 8500 |
-| **Agendamentos** | Reserva de salas e laboratórios | 8501 |
-| **Tarefas** | Gestão de atividades escolares e avaliações | 8502 |
+| **Gerenciamento** | Cadastro de alunos, turmas e professores | 1300 |
+| **Agendamentos** | Reserva de salas e laboratórios | 1301 |
+| **Tarefas** | Gestão de atividades escolares e avaliações | 1302 |
 
 ---
 
